@@ -22,15 +22,25 @@ func printFile(f *os.File) {
 	}
 }
 
+func getFile(name string) (*os.File, func(), error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return nil, nil, err
+	}
+	return f, func() {
+		f.Close()
+	}, nil
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatalln("Arguments amount should be 2")
 	}
 	fName := os.Args[1]
-	f, err := os.Open(fName)
+	f, closer, err := getFile(fName)
 	if err != nil {
 		log.Fatalf("Unexpected error during open a file: name = %s, error = %v", fName, err)
 	}
-	defer f.Close()
+	defer closer()
 	printFile(f)
 }
